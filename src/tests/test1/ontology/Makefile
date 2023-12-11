@@ -26,7 +26,7 @@ $(TMPDIR)/rxnorm.db: $(SCRIPTSDIR)/create-rxnorm-tables.sql $(SCRIPTSDIR)/load-r
 $(TMPDIR)/convert.db: $(TMPDIR)/chebi.db $(TMPDIR)/rxnorm.db $(SCRIPTSDIR)/create-dron-tables.sql $(SCRIPTSDIR)/convert-rxnorm-dron.sql $(SCRIPTSDIR)/load-dron-manual-tables.sql
 	rm -f $@
 	sqlite3 $@ < $(word 3,$^)
-	sqlite3 $@ "UPDATE current_dron_id SET id = 90000000"
+	sqlite3 $@ "UPDATE current_dron_id SET id = 90000001"
 	sqlite3 $@ < $(word 4,$^)
 	sqlite3 $@ < $(word 5,$^)
 
@@ -39,4 +39,36 @@ $(TMPDIR)/convert/: $(TMPDIR)/convert.db $(SCRIPTSDIR)/save-dron-tables.sql
 	
 .PHONY: convert
 convert: $(TMPDIR)/convert/
-	diff $(TEMPLATESDIR)/ $<
+	diff -u $(TEMPLATESDIR)/ $<
+
+$(TMPDIR)/ldtab.db: $(TMPDIR)/convert.db $(SCRIPTSDIR)/prefix.tsv $(SCRIPTSDIR)/create-statement-table.sql $(SCRIPTSDIR)/convert-dron-ldtab.sql
+	rm -f $@
+	ldtab init $@
+	ldtab prefix $@ $(word 2,$^)
+	sed 's/statement/dron_ingredient/' $(word 3,$^) | sqlite3 $@
+	# sed 's/statement/dron_rxnorm/' $(word 3,$^) | sqlite3 $@
+	# sed 's/statement/dron_ndc/' $(word 3,$^) | sqlite3 $@
+	sqlite3 $@ < $(word 4,$^)
+
+$(TMPDIR)/ldtab/:
+	mkdir -p $@
+
+$(TMPDIR)/ldtab/%.tsv: $(TMPDIR)/ldtab.db | $(TMPDIR)/ldtab/
+	ldtab export $< $@ --table $*
+	mv $@ $@.tmp
+	head -n1 $@.tmp > $@
+	tail -n+2 $@.tmp | sort >> $@
+	rm $@.tmp
+
+.PHONY: ldtab
+ldtab: $(TMPDIR)/ldtab/dron_ingredient.tsv
+	diff -u ../ldtab/ $(TMPDIR)/ldtab/
+
+$(TMPDIR)/ldtab/%.ttl: $(TMPDIR)/ldtab.db | $(TMPDIR)/ldtab/
+	ldtab export $< $@ --table $*
+
+$(TMPDIR)/ldtab/%.owl: $(TMPDIR)/ldtab/%.ttl
+	robot convert -i $< -o $@
+
+.PHONY: owl
+owl: $(TMPDIR)/ldtab/dron_ingredient.owl
