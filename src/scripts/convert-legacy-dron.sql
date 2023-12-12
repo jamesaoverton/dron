@@ -1,31 +1,22 @@
 -- Convert the old DrOn tables with too many _ids
 -- to the new DrOn tables using CURIEs.
 
-PRAGMA foreign_keys = ON;
+-- PRAGMA foreign_keys = ON;
 ATTACH DATABASE '../../dron.db' AS source;
 
-INSERT INTO rxcui
+INSERT OR IGNORE INTO rxcui
 SELECT
     label AS rxcui,
     replaced_by
 FROM source.rxcui;
 
-INSERT INTO ndc
-SELECT
-    REPLACE(REPLACE(n.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS curie,
-    n.label AS ndc,
-    x.label AS rxcui
-FROM source.ndc AS n
-LEFT JOIN source.rxcui AS x
-  ON n.ndc_rxcui_id = x.rxcui_id;
-
-INSERT INTO disposition
+INSERT OR IGNORE INTO disposition
 SELECT
     REPLACE(REPLACE(uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS curie,
     label
 FROM source.disposition;
 
-INSERT INTO ingredient
+INSERT OR IGNORE INTO ingredient
 SELECT
     REPLACE(REPLACE(i.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS curie,
     i.label,
@@ -34,7 +25,7 @@ FROM source.ingredient AS i
 LEFT JOIN source.rxcui AS x
   ON i.ingredient_rxcui_id = x.rxcui_id;
 
-INSERT INTO ingredient_disposition
+INSERT OR IGNORE INTO ingredient_disposition
 SELECT
     REPLACE(REPLACE(i.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS ingredient,
     REPLACE(REPLACE(d.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS disposition
@@ -44,7 +35,7 @@ LEFT JOIN source.ingredient AS i
 LEFT JOIN source.disposition AS d
   ON id.disposition_id = d.disposition_id;
 
-INSERT INTO clinical_drug_form
+INSERT OR IGNORE INTO clinical_drug_form
 SELECT
     REPLACE(REPLACE(cdf.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS curie,
     cdf.label,
@@ -53,7 +44,7 @@ FROM source.clinical_drug_form AS cdf
 LEFT JOIN source.rxcui AS x
   ON cdf.clinical_drug_form_rxcui_id = x.rxcui_id;
 
-INSERT INTO clinical_drug_form_ingredient
+INSERT OR IGNORE INTO clinical_drug_form_ingredient
 SELECT
     REPLACE(REPLACE(cdf.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS clinical_drug_form,
     REPLACE(REPLACE(i.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS ingredient
@@ -63,7 +54,7 @@ LEFT JOIN source.clinical_drug_form AS cdf
 LEFT JOIN source.ingredient AS i
   ON cdfi.ingredient_id = i.ingredient_id;
 
-INSERT INTO clinical_drug_form_disposition
+INSERT OR IGNORE INTO clinical_drug_form_disposition
 SELECT
     REPLACE(REPLACE(cdf.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS clinical_drug_form,
     REPLACE(REPLACE(i.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS disposition
@@ -73,7 +64,7 @@ LEFT JOIN source.clinical_drug_form AS cdf
 LEFT JOIN source.disposition AS i
   ON cdfi.disposition_id = i.disposition_id;
 
-INSERT INTO clinical_drug
+INSERT OR IGNORE INTO clinical_drug
 SELECT
     REPLACE(REPLACE(cd.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS curie,
     cd.label,
@@ -85,17 +76,7 @@ LEFT JOIN source.clinical_drug_form AS cdf
 LEFT JOIN source.rxcui AS x
   ON cd.clinical_drug_rxcui_id = x.rxcui_id;
 
-INSERT INTO clinical_drug_ndc
-SELECT
-    REPLACE(REPLACE(cd.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS clinical_drug,
-    REPLACE(REPLACE(n.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS ndc
-FROM source.clinical_drug_ndc AS cdn
-LEFT JOIN source.clinical_drug AS cd
-  ON cdn.clinical_drug_id = cd.clinical_drug_id
-LEFT JOIN source.ndc AS n
-  ON cdn.ndc_id = n.ndc_id;
-
-INSERT INTO clinical_drug_strength
+INSERT OR IGNORE INTO clinical_drug_strength
 SELECT
     REPLACE(REPLACE(cdf.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS clinical_drug,
     REPLACE(REPLACE(i.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS ingredient,
@@ -108,7 +89,7 @@ LEFT JOIN source.clinical_drug_form_ingredient AS cdfi
 LEFT JOIN source.ingredient AS i
   ON cdfi.ingredient_id = i.ingredient_id;
 
-INSERT INTO branded_drug
+INSERT OR IGNORE INTO branded_drug
 SELECT
     REPLACE(REPLACE(bd.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS curie,
     bd.label,
@@ -120,17 +101,7 @@ LEFT JOIN source.clinical_drug AS cd
 LEFT JOIN source.rxcui AS x
   ON bd.rxcui_id = x.rxcui_id;
 
-INSERT INTO branded_drug_ndc
-SELECT
-    REPLACE(REPLACE(bd.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS branded_drug,
-    REPLACE(REPLACE(n.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS ndc
-FROM source.branded_drug_ndc AS bdn
-LEFT JOIN source.branded_drug AS bd
-  ON bdn.branded_drug_id = bd.branded_drug_id
-LEFT JOIN source.ndc AS n
-  ON bdn.ndc_id = n.ndc_id;
-
-INSERT INTO branded_drug_excipient
+INSERT OR IGNORE INTO branded_drug_excipient
 SELECT
     REPLACE(REPLACE(bd.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS branded_drug,
     REPLACE(REPLACE(i.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS ingredient
@@ -139,3 +110,25 @@ LEFT JOIN source.branded_drug AS bd
   ON bde.branded_drug_id = bd.branded_drug_id
 LEFT JOIN source.ingredient AS i
   ON bde.ingredient_id = i.ingredient_id;
+
+INSERT OR IGNORE INTO ndc_branded_drug
+SELECT
+    REPLACE(REPLACE(n.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS curie,
+    n.label AS ndc,
+    REPLACE(REPLACE(bd.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS branded_drug
+FROM source.branded_drug_ndc AS bdn
+LEFT JOIN source.branded_drug AS bd
+  ON bdn.branded_drug_id = bd.branded_drug_id
+LEFT JOIN source.ndc AS n
+  ON bdn.ndc_id = n.ndc_id;
+
+INSERT OR IGNORE INTO ndc_clinical_drug
+SELECT
+    REPLACE(REPLACE(n.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS curie,
+    n.label AS ndc,
+    REPLACE(REPLACE(cd.uri, 'http://purl.obolibrary.org/obo/', ''), '_', ':') AS clinical_drug
+FROM source.clinical_drug_ndc AS cdn
+LEFT JOIN source.clinical_drug AS cd
+  ON cdn.clinical_drug_id = cd.clinical_drug_id
+LEFT JOIN source.ndc AS n
+  ON cdn.ndc_id = n.ndc_id;

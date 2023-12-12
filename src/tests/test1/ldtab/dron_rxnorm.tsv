@@ -1,0 +1,17 @@
+assertion	retraction	graph	subject	predicate	object	datatype	annotation
+1	0	graph	DRON:90000000	rdf:type	owl:Class	_IRI	
+1	0	graph	DRON:90000000	rdfs:label	anti-hypertensive function of a drug product	xsd:string	
+1	0	graph	DRON:90000000	rdfs:subClassOf	DRON:00000032	_IRI	
+1	0	graph	DRON:90000003	DRON:00010000	372281	xsd:string	
+1	0	graph	DRON:90000003	rdf:type	owl:Class	_IRI	
+1	0	graph	DRON:90000003	rdfs:label	Furosemide Oral Tablet	xsd:string	
+1	0	graph	DRON:90000003	rdfs:subClassOf	DRON:00000022	_IRI	
+1	0	graph	DRON:90000003	rdfs:subClassOf	{"owl:onProperty":[{"datatype":"_IRI","object":"BFO:0000053"}],"owl:someValuesFrom":[{"datatype":"_IRI","object":"DRON:90000000"}],"rdf:type":[{"datatype":"_IRI","object":"owl:Restriction"}]}	_JSON	
+1	0	graph	DRON:90000004	DRON:00010000	310429	xsd:string	
+1	0	graph	DRON:90000004	rdf:type	owl:Class	_IRI	
+1	0	graph	DRON:90000004	rdfs:label	Furosemide 20 MG Oral Tablet	xsd:string	
+1	0	graph	DRON:90000004	rdfs:subClassOf	DRON:90000003	_IRI	
+1	0	graph	DRON:90000005	DRON:00010000	200801	xsd:string	
+1	0	graph	DRON:90000005	rdf:type	owl:Class	_IRI	
+1	0	graph	DRON:90000005	rdfs:label	Furosemide 20 MG Oral Tablet [Lasix]	xsd:string	
+1	0	graph	DRON:90000005	rdfs:subClassOf	DRON:90000004	_IRI	

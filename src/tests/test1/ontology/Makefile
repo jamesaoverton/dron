@@ -20,6 +20,8 @@ $(TMPDIR)/dron.db: $(SCRIPTSDIR)/create-dron-tables.sql $(SCRIPTSDIR)/load-dron-
 
 $(TMPDIR)/rxnorm.db: $(SCRIPTSDIR)/create-rxnorm-tables.sql $(SCRIPTSDIR)/load-rxnorm-tables.sql | $(TMPDIR)/
 	rm -f $@
+	rm -rf $(TMPDIR)/rxnorm/
+	cp -r ../rxnorm/ $(TMPDIR)/
 	sqlite3 $@ < $<
 	sqlite3 $@ < $(word 2,$^)
 
@@ -46,8 +48,8 @@ $(TMPDIR)/ldtab.db: $(TMPDIR)/convert.db $(SCRIPTSDIR)/prefix.tsv $(SCRIPTSDIR)/
 	ldtab init $@
 	ldtab prefix $@ $(word 2,$^)
 	sed 's/statement/dron_ingredient/' $(word 3,$^) | sqlite3 $@
-	# sed 's/statement/dron_rxnorm/' $(word 3,$^) | sqlite3 $@
-	# sed 's/statement/dron_ndc/' $(word 3,$^) | sqlite3 $@
+	sed 's/statement/dron_rxnorm/' $(word 3,$^) | sqlite3 $@
+	sed 's/statement/dron_ndc/' $(word 3,$^) | sqlite3 $@
 	sqlite3 $@ < $(word 4,$^)
 
 $(TMPDIR)/ldtab/:
@@ -61,7 +63,7 @@ $(TMPDIR)/ldtab/%.tsv: $(TMPDIR)/ldtab.db | $(TMPDIR)/ldtab/
 	rm $@.tmp
 
 .PHONY: ldtab
-ldtab: $(TMPDIR)/ldtab/dron_ingredient.tsv
+ldtab: $(TMPDIR)/ldtab/dron_ingredient.tsv $(TMPDIR)/ldtab/dron_rxnorm.tsv $(TMPDIR)/ldtab/dron_ndc.tsv
 	diff -u ../ldtab/ $(TMPDIR)/ldtab/
 
 $(TMPDIR)/ldtab/%.ttl: $(TMPDIR)/ldtab.db | $(TMPDIR)/ldtab/
@@ -71,4 +73,4 @@ $(TMPDIR)/ldtab/%.owl: $(TMPDIR)/ldtab/%.ttl
 	robot convert -i $< -o $@
 
 .PHONY: owl
-owl: $(TMPDIR)/ldtab/dron_ingredient.owl
+owl: $(TMPDIR)/ldtab/dron_ingredient.owl $(TMPDIR)/ldtab/dron_rxnorm.owl $(TMPDIR)/ldtab/dron_ndc.owl
