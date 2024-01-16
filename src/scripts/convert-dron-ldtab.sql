@@ -4,7 +4,7 @@ ATTACH DATABASE 'tmp/convert.db' AS dron;
 
 -- Assert rdf:type is owl:Class
 -- for all ingredient and disposition rows.
-INSERT INTO dron_ingredient(subject, predicate, object)
+INSERT OR IGNORE INTO dron_ingredient(subject, predicate, object)
 SELECT
     curie AS subject,
     'rdf:type' AS predicate,
@@ -17,7 +17,7 @@ FROM (
 
 -- Assert rdfs:label annotation
 -- for all ingredient and disposition rows.
-INSERT INTO dron_ingredient(subject, predicate, object, datatype)
+INSERT OR IGNORE INTO dron_ingredient(subject, predicate, object, datatype)
 SELECT
     curie AS subject,
     'rdfs:label' AS predicate,
@@ -31,7 +31,7 @@ FROM (
 
 -- Assert DRON:00010000 'has_RxCUI' annotation.
 -- for all ingredient rows.
-INSERT INTO dron_ingredient(subject, predicate, object, datatype)
+INSERT OR IGNORE INTO dron_ingredient(subject, predicate, object, datatype)
 SELECT
     curie AS subject,
     'DRON:00010000' AS predicate,
@@ -41,7 +41,7 @@ FROM dron.ingredient;
 
 -- Assert rdfs:subClassOf BFO:0000016 'disposition'
 -- for all disposition rows.
-INSERT INTO dron_ingredient(subject, predicate, object)
+INSERT OR IGNORE INTO dron_ingredient(subject, predicate, object)
 SELECT
     curie AS subject,
     'rdfs:subClassOf' AS predicate,
@@ -50,7 +50,7 @@ FROM dron.disposition;
 
 -- Assert rdfs:subClassOf OBI:0000047 'processed material'
 -- for all ingredient rows with DRON IDs.
-INSERT INTO dron_ingredient(subject, predicate, object)
+INSERT OR IGNORE INTO dron_ingredient(subject, predicate, object)
 SELECT
     curie AS subject,
     'rdfs:subClassOf' AS predicate,
@@ -60,7 +60,7 @@ WHERE curie LIKE 'DRON:%';
 
 -- Assert rdfs:subClassOf "'has disposition' some DISPOSITION"
 -- for all ingredient_disposition rows.
-INSERT INTO dron_ingredient(subject, predicate, object, datatype)
+INSERT OR IGNORE INTO dron_ingredient(subject, predicate, object, datatype)
 SELECT
     ingredient AS subject,
     'rdfs:subClassOf' AS predicate,
@@ -77,7 +77,7 @@ FROM dron.ingredient_disposition;
 -- Assert rdf:type is owl:Class
 -- for all clinical drug form, clinical drug, and branded drug
 -- and dispositions in clinical_dru_form_disposition rows.
-INSERT INTO dron_rxnorm(subject, predicate, object)
+INSERT OR IGNORE INTO dron_rxnorm(subject, predicate, object)
 SELECT
     curie AS subject,
     'rdf:type' AS predicate,
@@ -95,7 +95,7 @@ FROM (
 -- Assert rdfs:label annotation
 -- for all clinical drug form, clinical drug, and branded drug
 -- and dispositions in clinical_dru_form_disposition rows.
-INSERT INTO dron_rxnorm(subject, predicate, object, datatype)
+INSERT OR IGNORE INTO dron_rxnorm(subject, predicate, object, datatype)
 SELECT
     curie AS subject,
     'rdfs:label' AS predicate,
@@ -116,7 +116,7 @@ FROM (
 
 -- Assert DRON:00010000 'has_RxCUI' annotation.
 -- for all clinical drug form, clinical drug, and branded drug rows.
-INSERT INTO dron_rxnorm(subject, predicate, object, datatype)
+INSERT OR IGNORE INTO dron_rxnorm(subject, predicate, object, datatype)
 SELECT
     curie AS subject,
     'DRON:00010000' AS predicate,
@@ -134,7 +134,7 @@ FROM (
 
 -- Assert rdfs:subClassOf parent drug class
 -- for all clinical drug and branded drug rows
-INSERT INTO dron_rxnorm(subject, predicate, object)
+INSERT OR IGNORE INTO dron_rxnorm(subject, predicate, object)
 SELECT
     curie AS subject,
     'rdfs:subClassOf' AS predicate,
@@ -147,7 +147,7 @@ FROM (
 
 -- Assert rdfs:subClassOf DRON:00000032 'drug product therapeutic function'
 -- for all dispositions in clinical_drug_form_disposition rows.
-INSERT INTO dron_rxnorm(subject, predicate, object)
+INSERT OR IGNORE INTO dron_rxnorm(subject, predicate, object)
 SELECT
     disposition AS subject,
     'rdfs:subClassOf' AS predicate,
@@ -156,7 +156,7 @@ FROM dron.clinical_drug_form_disposition;
 
 -- Assert rdfs:subClassOf "'has disposition' some DISPOSITION"
 -- for all clinical_drug_form_disposition rows.
-INSERT INTO dron_rxnorm(subject, predicate, object, datatype)
+INSERT OR IGNORE INTO dron_rxnorm(subject, predicate, object, datatype)
 SELECT
     clinical_drug_form AS subject,
     'rdfs:subClassOf' AS predicate,
@@ -172,7 +172,7 @@ FROM dron.clinical_drug_form_disposition;
 
 -- Assert rdf:type is owl:Class
 -- for all NDCs: branded drug and clinical drug.
-INSERT INTO dron_ndc(subject, predicate, object)
+INSERT OR IGNORE INTO dron_ndc(subject, predicate, object)
 SELECT
     curie AS subject,
     'rdf:type' AS predicate,
@@ -185,7 +185,7 @@ FROM (
 
 -- Assert rdfs:label annotation
 -- for all NDCs: branded drug and clinical drug.
-INSERT INTO dron_ndc(subject, predicate, object, datatype)
+INSERT OR IGNORE INTO dron_ndc(subject, predicate, object, datatype)
 SELECT
     curie AS subject,
     'rdfs:label' AS predicate,
@@ -199,7 +199,7 @@ FROM (
 
 -- Assert rdfs:subClassOf DRON:00000027 'packaged drug product'
 -- for all NDCs: branded drug and clinical drug.
-INSERT INTO dron_ndc(subject, predicate, object)
+INSERT OR IGNORE INTO dron_ndc(subject, predicate, object)
 SELECT
     curie AS subject,
     'rdfs:subClassOf' AS predicate,
@@ -212,7 +212,7 @@ FROM (
 
 -- Assert rdfs:subClassOf "'has proper part' some DRUG"
 -- for all NDCs: branded drug and clinical drug.
-INSERT INTO dron_ndc(subject, predicate, object, datatype)
+INSERT OR IGNORE INTO dron_ndc(subject, predicate, object, datatype)
 SELECT
     curie AS subject,
     'rdfs:subClassOf' AS predicate,

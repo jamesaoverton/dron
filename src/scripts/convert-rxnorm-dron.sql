@@ -1,11 +1,13 @@
 -- Convert RxNorm tables to DrOn tables.
 
+-- .echo on
+
 PRAGMA foreign_keys = ON;
 ATTACH 'tmp/chebi.db' AS chebi;
 ATTACH 'tmp/rxnorm.db' AS rxnorm;
 
 -- Add RXCUIs that we plan to use.
-INSERT INTO rxcui
+INSERT OR IGNORE INTO rxcui
 SELECT
   RXCUI AS rxcui,
   NULL AS replaced_by
@@ -15,7 +17,7 @@ WHERE SAB = 'RXNORM'
 
 -- Add ingredients not already in that table
 -- if they match a ChEBI label.
-INSERT INTO ingredient
+INSERT OR IGNORE INTO ingredient
 SELECT DISTINCT
     cl.curie AS curie,
     c.STR AS label,
@@ -27,10 +29,10 @@ LEFT JOIN chebi.label AS cl
 WHERE c.SAB = 'RXNORM'
   AND c.TTY = 'IN'
   AND i.curie IS NULL
-  AND LOWER(c.STR) = LOWER(cl.label);
+  AND LOWER(c.STR) = cl.lower;
 
 -- Add ingredients not already in that table.
-INSERT INTO ingredient
+INSERT OR IGNORE INTO ingredient
 SELECT DISTINCT
     NULL AS curie,
     c.STR AS label,
@@ -43,7 +45,7 @@ WHERE c.SAB = 'RXNORM'
   AND i.curie IS NULL;
 
 -- Add clinical drug forms not already in that table.
-INSERT INTO clinical_drug_form
+INSERT OR IGNORE INTO clinical_drug_form
 SELECT DISTINCT
     NULL AS curie,
     c.STR AS label,
@@ -60,7 +62,7 @@ WHERE c.SAB = 'RXNORM'
 -- where the relation is 'isa'
 -- the RXCUI1 is the clinical drug form
 -- and the RXCUI2 is the clinical drug.
-INSERT INTO clinical_drug
+INSERT OR IGNORE INTO clinical_drug
 SELECT DISTINCT
     NULL AS curie,
     c.STR AS label,
@@ -83,7 +85,7 @@ WHERE c.SAB = 'RXNORM'
 -- where the relation is 'tradename_of'
 -- the RXCUI1 is the clinical drug
 -- and the RXCUI2 is the branded drug.
-INSERT INTO branded_drug
+INSERT OR IGNORE INTO branded_drug
 SELECT DISTINCT
     NULL AS curie,
     c.STR AS label,
@@ -102,7 +104,7 @@ WHERE c.SAB = 'RXNORM'
   AND bd.curie IS NULL;
 
 -- Add NDCs for branded drugs not already in that table.
-INSERT INTO ndc_branded_drug
+INSERT OR IGNORE INTO ndc_branded_drug
 SELECT DISTINCT
     NULL AS curie,
     s.ATV AS ndc,
@@ -117,7 +119,7 @@ WHERE s.RXCUI = bd.rxcui
   AND n.curie IS NULL;
 
 -- Add NDCs for clinical drugs not already in that table.
-INSERT INTO ndc_clinical_drug
+INSERT OR IGNORE INTO ndc_clinical_drug
 SELECT DISTINCT
     NULL AS curie,
     s.ATV AS ndc,
@@ -136,7 +138,7 @@ WHERE s.RXCUI = cd.rxcui
 -- where the relation is 'has_ingredient'
 -- the RXCUI1 is the ingredient
 -- and the RXCUI2 is the clinical drug form.
-INSERT INTO clinical_drug_form_ingredient
+INSERT OR IGNORE INTO clinical_drug_form_ingredient
 SELECT DISTINCT
     cdf.curie AS clinical_drug_form,
     i.curie AS ingredient
@@ -152,7 +154,7 @@ WHERE r.RELA = 'has_ingredient'
 -- Foreach constituent,
 -- get its has_ingrediant relation,
 -- and its RXN_STRENGTH attribute.
-INSERT INTO clinical_drug_strength
+INSERT OR IGNORE INTO clinical_drug_strength
 SELECT DISTINCT
   cd.curie AS clinical_drug,
   i.curie AS ingredient,
@@ -179,7 +181,7 @@ WHERE r1.RXCUI1 = cd.rxcui
 -- Foreach 'has_inactive_ingredient' relation,
 -- follow the RXAUI1 atom to an RXCUI for an ingredient
 -- and the RXAUI2 atom to an RXCUI for a branded_drug.
-INSERT INTO branded_drug_excipient
+INSERT OR IGNORE INTO branded_drug_excipient
 SELECT DISTINCT
     bd.curie AS branded_drug,
     i.curie AS ingredient
