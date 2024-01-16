@@ -37,6 +37,8 @@ src/ontology/tmp/*
 
 src/ontology/imports/*_terms_combined.txt
 
+src/tests/test1/ontology/tmp/
+
 src/patterns/data/**/*.ofn
 src/patterns/data/**/*.txt
 src/patterns/pattern_owl_seed.txt

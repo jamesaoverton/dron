@@ -156,3 +156,96 @@ tmp/dron_unsat.ofn: $(SRC)
 .PHONY: swap_chebi_in_edit
 swap_chebi_in_edit:
 	 $(call swap_chebi,$(SRC))
+
+
+############################
+## From 2023 Refactoring ###
+############################
+
+# Use ROBOT to extract IDs and labels from chebi.owl.
+# $(TMPDIR)/chebi.tsv: $(MIRRORDIR)/chebi.owl
+# 	robot export --input $< \
+# 	--include "classes" \
+# 	--header "ID|LABEL" \
+# 	--export $@
+
+# Load ChEBI IDs and labels into SQLite.
+$(TMPDIR)/chebi.db: $(TMPDIR)/chebi.tsv
+	rm -f $@
+	sqlite3 $@ ".mode tabs" ".import '$<' temp"
+	sqlite3 $@ "CREATE TABLE label ( curie TEXT PRIMARY KEY, label TEXT UNIQUE, lower TEXT UNIQUE );"
+	sqlite3 $@ "INSERT OR IGNORE INTO label SELECT ID AS curie, LABEL, LOWER(LABEL) AS lower FROM temp"
+	sqlite3 $@ "CREATE INDEX idx_label_lower ON label(lower)"
+	sqlite3 $@ "DROP TABLE temp"
+
+# Create a SQLite database for DrOn and load tables from ../templates/*.tsv.
+$(TMPDIR)/dron.db: $(SCRIPTSDIR)/create-dron-tables.sql $(SCRIPTSDIR)/load-dron-tables.sql
+	rm -f $@
+	sqlite3 $@ < $<
+	sqlite3 $@ < $(word 2,$^)
+
+# Create a SQLite database for RxNorm and load data from tmp/rxnorm/*.RRF.
+$(TMPDIR)/rxnorm.db: $(SCRIPTSDIR)/create-rxnorm-tables.sql $(SCRIPTSDIR)/load-rxnorm-tables.sql $(SCRIPTSDIR)/index-rxnorm-tables.sql | $(TMPDIR)/
+	rm -f $@
+	sqlite3 $@ < $<
+	sqlite3 $@ < $(word 2,$^) 2> /dev/null
+	sqlite3 $@ < $(word 3,$^)
+
+# Convert RxNorm to DrOn tables.
+$(TMPDIR)/convert.db: $(TMPDIR)/chebi.db $(TMPDIR)/rxnorm.db $(SCRIPTSDIR)/create-dron-tables.sql $(SCRIPTSDIR)/index-dron-tables.sql $(SCRIPTSDIR)/convert-rxnorm-dron.sql $(SCRIPTSDIR)/load-dron-manual-tables.sql
+	rm -f $@
+	sqlite3 $@ < $(word 3,$^)
+	sqlite3 $@ "UPDATE current_dron_id SET id = 10000000"
+	sqlite3 $@ < $(word 4,$^)
+	sqlite3 $@ < $(word 5,$^)
+	sqlite3 $@ < $(word 6,$^)
+
+# Save results of RxNorm to DrOn conversion to DrOn tables.
+$(TMPDIR)/convert/: $(TMPDIR)/convert.db $(SCRIPTSDIR)/save-dron-tables.sql
+	rm -rf $@
+	mkdir -p $@
+	cd $(TMPDIR)/convert/ && sqlite3 ../convert.db < ../../$(word 2,$^)
+	# Create empty tables for comparison.
+	echo "curie	ndc	clinical_drug" > $@/ndc_clinical_drug.tsv
+	
+# Compare DrOn templates to conversion results.
+.PHONY: convert
+convert: $(TMPDIR)/convert/
+	diff -u $(TEMPLATEDIR)/ $<
+
+# Convert DrOn tables to LDTab format.
+$(TMPDIR)/ldtab.db: $(TMPDIR)/convert.db $(SCRIPTSDIR)/prefix.tsv $(SCRIPTSDIR)/create-statement-table.sql $(SCRIPTSDIR)/convert-dron-ldtab.sql
+	rm -f $@
+	ldtab init $@
+	ldtab prefix $@ $(word 2,$^)
+	sed 's/statement/dron_ingredient/' $(word 3,$^) | sqlite3 $@
+	sed 's/statement/dron_rxnorm/' $(word 3,$^) | sqlite3 $@
+	sed 's/statement/dron_ndc/' $(word 3,$^) | sqlite3 $@
+	sqlite3 $@ < $(word 4,$^)
+
+$(TMPDIR)/ldtab/:
+	mkdir -p $@
+
+# Export an LDTab table to a TSV file.
+$(TMPDIR)/ldtab/%.tsv: $(TMPDI/ldtab.db | $(TMPDIR)/ldtab/
+	ldtab export $< $@ --table $*
+	mv $@ $@.tmp
+	head -n1 $@.tmp > $@
+	tail -n+2 $@.tmp | sort >> $@
+	rm $@.tmp
+
+# Compare LDTab tables to expected.
+.PHONY: ldtab
+ldtab: $(TMPDIR)/ldtab/dron_ingredient.tsv $(TMPDIR)/ldtab/dron_rxnorm.tsv $(TMPDIR)/ldtab/dron_ndc.tsv
+	diff -u ../ldtab/ $(TMPDIR)/ldtab/
+
+# Export an LDTab table to a file in Turtle format.
+$(TMPDIR)/ldtab/%.ttl: $(TMPDIR)/ldtab.db | $(TMPDIR)/ldtab/
+	ldtab export $< $@ --table $*
+
+# Convert a Turtle file to an OWL file in RDFXML format.
+$(TMPDIR)/ldtab/%.owl: $(TMPDIR)/ldtab/%.ttl
+	robot convert -i $< -o $@
+
+.PHONY: owl
+owl: $(TMPDIR)/ldtab/dron_ingredient.owl $(TMPDIR)/ldtab/dron_rxnorm.owl $(TMPDIR)/ldtab/dron_ndc.owl

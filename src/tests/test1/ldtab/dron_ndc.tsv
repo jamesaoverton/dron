@@ -1,0 +1,9 @@
+assertion	retraction	graph	subject	predicate	object	datatype	annotation
+1	0	graph	DRON:90000006	rdf:type	owl:Class	_IRI	
+1	0	graph	DRON:90000006	rdfs:label	30698006701	xsd:string	
+1	0	graph	DRON:90000006	rdfs:subClassOf	DRON:00000027	_IRI	
+1	0	graph	DRON:90000006	rdfs:subClassOf	{"owl:onProperty":[{"datatype":"_IRI","object":"<http://www.obofoundry.org/ro/ro.owl#has_proper_part>"}],"owl:someValuesFrom":[{"datatype":"_IRI","object":"DRON:90000005"}],"rdf:type":[{"datatype":"_IRI","object":"owl:Restriction"}]}	_JSON	
+1	0	graph	DRON:90000007	rdf:type	owl:Class	_IRI	
+1	0	graph	DRON:90000007	rdfs:label	30698006710	xsd:string	
+1	0	graph	DRON:90000007	rdfs:subClassOf	DRON:00000027	_IRI	
+1	0	graph	DRON:90000007	rdfs:subClassOf	{"owl:onProperty":[{"datatype":"_IRI","object":"<http://www.obofoundry.org/ro/ro.owl#has_proper_part>"}],"owl:someValuesFrom":[{"datatype":"_IRI","object":"DRON:90000005"}],"rdf:type":[{"datatype":"_IRI","object":"owl:Restriction"}]}	_JSON	

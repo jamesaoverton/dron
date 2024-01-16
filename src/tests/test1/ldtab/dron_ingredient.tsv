@@ -1,0 +1,21 @@
+assertion	retraction	graph	subject	predicate	object	datatype	annotation
+1	0	graph	CHEBI:30563	DRON:00010000	9771	xsd:string	
+1	0	graph	CHEBI:30563	rdf:type	owl:Class	_IRI	
+1	0	graph	CHEBI:30563	rdfs:label	Silicon Dioxide	xsd:string	
+1	0	graph	CHEBI:32178	DRON:00010000	10323	xsd:string	
+1	0	graph	CHEBI:32178	rdf:type	owl:Class	_IRI	
+1	0	graph	CHEBI:32178	rdfs:label	Talc	xsd:string	
+1	0	graph	CHEBI:47426	DRON:00010000	4603	xsd:string	
+1	0	graph	CHEBI:47426	rdf:type	owl:Class	_IRI	
+1	0	graph	CHEBI:47426	rdfs:label	Furosemide	xsd:string	
+1	0	graph	CHEBI:47426	rdfs:subClassOf	{"owl:onProperty":[{"datatype":"_IRI","object":"BFO:0000053"}],"owl:someValuesFrom":[{"datatype":"_IRI","object":"DRON:90000000"}],"rdf:type":[{"datatype":"_IRI","object":"owl:Restriction"}]}	_JSON	
+1	0	graph	DRON:90000000	rdf:type	owl:Class	_IRI	
+1	0	graph	DRON:90000000	rdfs:label	anti-hypertensive function of a drug product	xsd:string	
+1	0	graph	DRON:90000000	rdfs:subClassOf	BFO:0000016	_IRI	
+1	0	graph	DRON:90000001	rdf:type	owl:Class	_IRI	
+1	0	graph	DRON:90000001	rdfs:label	function-inhibiting Na-K-Cl cotransporter 2 (NKCC2) binding disposition	xsd:string	
+1	0	graph	DRON:90000001	rdfs:subClassOf	BFO:0000016	_IRI	
+1	0	graph	DRON:90000002	DRON:00010000	1039062	xsd:string	
+1	0	graph	DRON:90000002	rdf:type	owl:Class	_IRI	
+1	0	graph	DRON:90000002	rdfs:label	corn starch	xsd:string	
+1	0	graph	DRON:90000002	rdfs:subClassOf	OBI:0000047	_IRI	
